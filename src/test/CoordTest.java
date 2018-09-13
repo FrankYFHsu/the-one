@@ -16,6 +16,8 @@ public class CoordTest extends TestCase {
 		Coord c4 = new Coord(3,2);
 		Coord c5 = new Coord(-2,-3);
 		Coord c6 = new Coord(-2,-3);
+		Coord c7 = new Coord(-2,-3,-1);
+		Coord c8 = new Coord(-2,-3,1);
 
 		assertTrue(c1.hashCode() == c2.hashCode());
 		assertTrue(c1.hashCode() != c3.hashCode());
@@ -23,8 +25,10 @@ public class CoordTest extends TestCase {
 		assertTrue(c5.hashCode() == c6.hashCode());
 		assertTrue(c3.hashCode() != c5.hashCode());
 
+
 		c5.translate(1, 1);
 		assertTrue(c5.hashCode() != c6.hashCode());
+		assertTrue(c7.hashCode() != c8.hashCode());
 
 	}
 
