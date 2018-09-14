@@ -375,7 +375,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	public void move(double timeIncrement) {
 		double possibleMovement;
 		double distance;
-		double dx, dy;
+		double dx, dy, dz;
 
 		if (!isMovementActive() || SimClock.getTime() < this.nextTimeToMove) {
 			return;
@@ -404,7 +404,9 @@ public class DTNHost implements Comparable<DTNHost> {
 				this.location.getX());
 		dy = (possibleMovement/distance) * (this.destination.getY() -
 				this.location.getY());
-		this.location.translate(dx, dy);
+		dz = (possibleMovement/distance) * (this.destination.getZ() -
+				this.location.getZ());
+		this.location.translate(dx, dy, dz);
 	}
 
 	/**

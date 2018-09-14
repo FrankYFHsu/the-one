@@ -94,6 +94,8 @@ public class SimScenario implements Serializable {
 	private int worldSizeX;
 	/** Height of the world */
 	private int worldSizeY;
+	
+	private int worldSizeZ;
 	/** Largest host's radio range */
 	private double maxHostRange;
 	/** Simulation end time */
@@ -155,15 +157,33 @@ public class SimScenario implements Serializable {
 
 		/* TODO: check size from movement models */
 		s.setNameSpace(MovementModel.MOVEMENT_MODEL_NS);
-		int [] worldSize = s.getCsvInts(MovementModel.WORLD_SIZE, 2);
+		int [] worldSize = s.getCsvInts(MovementModel.WORLD_SIZE);
+		if(worldSize.length<2 || worldSize.length>3) {
+			
+			System.err.println("Can't start: error in configuration file(s)");
+			System.err.println("Read unexpected amount ("+worldSize.length+") of "
+					+ "comma separated values for setting 'worldSize' (expected 2 or 3)");
+			System.exit(0);
+		}
+		
+		
 		this.worldSizeX = worldSize[0];
 		this.worldSizeY = worldSize[1];
+		if(worldSize.length>2) {
+			this.worldSizeZ = worldSize[2];
+		}
 
 		createHosts();
+		if(worldSize.length>2) {
+			this.world = new World(hosts, worldSizeX, worldSizeY, worldSizeZ, updateInterval,
+					updateListeners, simulateConnections,
+					eqHandler.getEventQueues());
+		}else {
+			this.world = new World(hosts, worldSizeX, worldSizeY, updateInterval,
+					updateListeners, simulateConnections,
+					eqHandler.getEventQueues());
+		}
 
-		this.world = new World(hosts, worldSizeX, worldSizeY, updateInterval,
-				updateListeners, simulateConnections,
-				eqHandler.getEventQueues());
 	}
 
 	/**
@@ -208,6 +228,14 @@ public class SimScenario implements Serializable {
 	 */
 	public int getWorldSizeY() {
 		return worldSizeY;
+	}
+	
+	/**
+	 * Returns the z of the world
+	 * @return the Z of the world
+	 */
+	public int getWorldSizeZ() {
+		return worldSizeZ;
 	}
 
 	/**

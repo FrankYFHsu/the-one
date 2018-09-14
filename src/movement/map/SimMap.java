@@ -102,13 +102,23 @@ public class SimMap implements Serializable {
 	 * @param dy the amount to translate Y coordinates
 	 */
 	public void translate(double dx, double dy) {
+		translate(dx,dy,0);
+	}
+	
+	/**
+	 * Translate whole map by dx, dy, dz
+	 * @param dx The amount to translate X coordinates
+	 * @param dy the amount to translate Y coordinates
+	 * @param dz the amount to translate Z coordinates
+	 */
+	public void translate(double dx, double dy, double dz) {
 		for (MapNode n : nodes) {
-			n.getLocation().translate(dx, dy);
+			n.getLocation().translate(dx, dy, dz);
 		}
 
-		minBound.translate(dx, dy);
-		maxBound.translate(dx, dy);
-		offset.translate(dx, dy);
+		minBound.translate(dx, dy, dz);
+		maxBound.translate(dx, dy, dz);
+		offset.translate(dx, dy, dz);
 
 		needsRehash = true;
 	}
@@ -122,7 +132,7 @@ public class SimMap implements Serializable {
 		Coord c;
 		for (MapNode n : nodes) {
 			c=n.getLocation();
-			c.setLocation(c.getX(), -c.getY());
+			c.setLocation(c.getX(), -c.getY(), c.getZ());
 		}
 		setBounds();
 		this.isMirrored = true;
@@ -133,10 +143,10 @@ public class SimMap implements Serializable {
 	 * Updates the min & max bounds to conform to the values of the map nodes.
 	 */
 	private void setBounds() {
-		double minX, minY, maxX, maxY;
+		double minX, minY, minZ, maxX, maxY, maxZ;
 		Coord c;
-		minX = minY = Double.MAX_VALUE;
-		maxX = maxY = -Double.MAX_VALUE;
+		minX = minY = minZ = Double.MAX_VALUE;
+		maxX = maxY = maxZ = -Double.MAX_VALUE;
 
 		for (MapNode n : nodes) {
 			c = n.getLocation();
@@ -152,9 +162,15 @@ public class SimMap implements Serializable {
 			if (c.getY() > maxY) {
 				maxY = c.getY();
 			}
+			if (c.getZ() < minZ) {
+				minZ = c.getZ();
+			}
+			if (c.getZ() > maxZ) {
+				maxZ = c.getZ();
+			}
 		}
-		minBound = new Coord(minX, minY);
-		maxBound = new Coord(maxX, maxY);
+		minBound = new Coord(minX, minY, minZ);
+		maxBound = new Coord(maxX, maxY, maxZ);
 	}
 
 	/**

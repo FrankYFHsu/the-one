@@ -60,6 +60,7 @@ public abstract class MovementModel {
 
 	private int maxX;
 	private int maxY;
+	private int maxZ;
 
 	protected ModuleCommunicationBus comBus;
 
@@ -87,6 +88,8 @@ public abstract class MovementModel {
 					" min is bigger than max ("+min+", "+max+")");
 		}
 	}
+	
+	
 
 	/**
 	 * Empty constructor for testing purposes.
@@ -128,9 +131,27 @@ public abstract class MovementModel {
 		checkMinAndMaxSetting(WAIT_TIME,minWaitTime,maxWaitTime);
 
 		settings.setNameSpace(MOVEMENT_MODEL_NS);
-		int [] worldSize = settings.getCsvInts(WORLD_SIZE,2);
+		int [] worldSize = settings.getCsvInts(WORLD_SIZE);
+		
+		if(worldSize.length<2 || worldSize.length>3) {
+			
+			System.err.println("Can't start: error in configuration file(s)");
+			System.err.println("Read unexpected amount ("+worldSize.length+") of "
+					+ "comma separated values for setting 'worldSize' (expected 2 or 3)");
+			System.exit(0);
+		}
+		
+		
+		
 		this.maxX = worldSize[0];
 		this.maxY = worldSize[1];
+		if(worldSize.length>2) {
+			this.maxZ = worldSize[2];
+		}else {
+			this.maxZ = 0;
+			System.out.println("Warrning! the simulation map is 2D");
+		}
+		
 
 		settings.restoreNameSpace();
 	}
@@ -147,6 +168,7 @@ public abstract class MovementModel {
 		this.minWaitTime = mm.minWaitTime;
 		this.maxX = mm.maxX;
 		this.maxY = mm.maxY;
+		this.maxZ = mm.maxZ;
 		this.ah = mm.ah;
 		this.comBus = null;
 	}
@@ -165,6 +187,14 @@ public abstract class MovementModel {
 	 */
 	public int getMaxY() {
 		return this.maxY;
+	}
+	
+	/**
+	 * Returns the largest Z coordinate value this model uses
+	 * @return Maximum of Z coordinate values
+	 */
+	public int getMaxZ() {
+		return this.maxZ;
 	}
 
 

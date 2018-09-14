@@ -54,13 +54,15 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	/** default value for cell size multiplier ({@value}) */
 	public static final int DEF_CON_CELL_SIZE_MULT = 5;
 
-	private GridCell[][] cells;
+	private GridCell[][][] cells;
 	private HashMap<NetworkInterface, GridCell> ginterfaces;
 	private int cellSize;
 	private int rows;
 	private int cols;
+	private int deeps;
 	private static int worldSizeX;
 	private static int worldSizeY;
+	private static int worldSizeZ;
 	private static int cellSizeMultiplier;
 
 	static HashMap<Integer,ConnectivityGrid> gridobjects;
@@ -74,9 +76,25 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 		gridobjects = new HashMap<Integer, ConnectivityGrid>();
 
 		Settings s = new Settings(MovementModel.MOVEMENT_MODEL_NS);
-		int [] worldSize = s.getCsvInts(MovementModel.WORLD_SIZE,2);
+		int [] worldSize = s.getCsvInts(MovementModel.WORLD_SIZE);
+		
+		if(worldSize.length<2 || worldSize.length>3) {
+			
+			System.err.println("Can't start: error in configuration file(s)");
+			System.err.println("Read unexpected amount ("+worldSize.length+") of "
+					+ "comma separated values for setting 'worldSize' (expected 2 or 3)");
+			System.exit(0);
+		}
+		
 		worldSizeX = worldSize[0];
 		worldSizeY = worldSize[1];
+		
+		if(worldSize.length>2) {
+			worldSizeZ = worldSize[2];
+		}else {
+			worldSizeZ = 0;
+		}
+		
 
 		s.setNameSpace(World.OPTIMIZATION_SETTINGS_NS);
 		if (s.contains(CELL_SIZE_MULT_S)) {
@@ -100,13 +118,17 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	private ConnectivityGrid(int cellSize) {
 		this.rows = worldSizeY/cellSize + 1;
 		this.cols = worldSizeX/cellSize + 1;
+		this.deeps = worldSizeZ/cellSize +1;
 		// leave empty cells on both sides to make neighbor search easier
-		this.cells = new GridCell[rows+2][cols+2];
+		this.cells = new GridCell[rows+2][cols+2][deeps+2];
 		this.cellSize = cellSize;
 
 		for (int i=0; i<rows+2; i++) {
 			for (int j=0; j<cols+2; j++) {
-				this.cells[i][j] = new GridCell();
+				for (int k=0;k<deeps+2;k++) {
+					this.cells[i][j][k] = new GridCell();
+				}
+				
 			}
 		}
 		ginterfaces = new HashMap<NetworkInterface,GridCell>();
@@ -187,7 +209,8 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 		// +1 due empty cells on both sides of the matrix
 		int row = (int)(c.getY()/cellSize) + 1;
 		int col = (int)(c.getX()/cellSize) + 1;
-		return getNeighborCells(row,col);
+		int deep = (int)(c.getZ()/cellSize)+1;
+		return getNeighborCells(row,col,deep);
 	}
 
 	/**
@@ -197,11 +220,18 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	 * @param col Column index of the cell
 	 * @return Array of neighboring Cells
 	 */
-	private GridCell[] getNeighborCells(int row, int col) {
+	private GridCell[] getNeighborCells(int row, int col, int deep) {
 		return new GridCell[] {
-			cells[row-1][col-1],cells[row-1][col],cells[row-1][col+1],//1st row
-			cells[row][col-1],cells[row][col],cells[row][col+1],//2nd row
-			cells[row+1][col-1],cells[row+1][col],cells[row+1][col+1]//3rd row
+			cells[row-1][col-1][deep-1],cells[row-1][col][deep-1],cells[row-1][col+1][deep-1],//1st row
+			cells[row][col-1][deep-1],cells[row][col][deep-1],cells[row][col+1][deep-1],//2nd row
+			cells[row+1][col-1][deep-1],cells[row+1][col][deep-1],cells[row+1][col+1][deep-1],//3rd row
+			cells[row-1][col-1][deep],cells[row-1][col][deep],cells[row-1][col+1][deep],//1st row
+			cells[row][col-1][deep],cells[row][col][deep],cells[row][col+1][deep],//2nd row
+			cells[row+1][col-1][deep],cells[row+1][col][deep],cells[row+1][col+1][deep],//3rd row
+			cells[row-1][col-1][deep+1],cells[row-1][col][deep+1],cells[row-1][col+1][deep+1],//1st row
+			cells[row][col-1][deep+1],cells[row][col][deep+1],cells[row][col+1][deep+1],//2nd row
+			cells[row+1][col-1][deep+1],cells[row+1][col][deep+1],cells[row+1][col+1][deep+1],//3rd row
+			
 		};
 	}
 
@@ -214,11 +244,12 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 		// +1 due empty cells on both sides of the matrix
 		int row = (int)(c.getY()/cellSize) + 1;
 		int col = (int)(c.getX()/cellSize) + 1;
+		int deep = (int)(c.getZ()/cellSize) + 1;
 
-		assert row > 0 && row <= rows && col > 0 && col <= cols : "Location " +
+		assert row > 0 && row <= rows && col > 0 && col <= cols && deep > 0 && deep <= deeps: "Location " +
 		c + " is out of world's bounds";
 
-		return this.cells[row][col];
+		return this.cells[row][col][deep];
 	}
 
 	/**
@@ -257,7 +288,7 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	 */
 	public String toString() {
 		return getClass().getSimpleName() + " of size " +
-			this.cols + "x" + this.rows + ", cell size=" + this.cellSize;
+			this.cols + "x" + this.rows + "x" + this.deeps +", cell size=" + this.cellSize;
 	}
 
 	/**

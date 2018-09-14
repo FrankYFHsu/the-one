@@ -39,6 +39,7 @@ public class World {
 
 	private int sizeX;
 	private int sizeY;
+	private int sizeZ;
 	private List<EventQueue> eventQueues;
 	private double updateInterval;
 	private SimClock simClock;
@@ -58,7 +59,7 @@ public class World {
 	private boolean simulateConOnce;
 
 	/**
-	 * Constructor.
+	 * Constructor for 2D
 	 */
 	public World(List<DTNHost> hosts, int sizeX, int sizeY,
 			double updateInterval, List<UpdateListener> updateListeners,
@@ -66,6 +67,29 @@ public class World {
 		this.hosts = hosts;
 		this.sizeX = sizeX;
 		this.sizeY = sizeY;
+		this.sizeZ = 0;
+		this.updateInterval = updateInterval;
+		this.updateListeners = updateListeners;
+		this.simulateConnections = simulateConnections;
+		this.eventQueues = eventQueues;
+
+		this.simClock = SimClock.getInstance();
+		this.scheduledUpdates = new ScheduledUpdatesQueue();
+		this.isCancelled = false;
+
+		setNextEventQueue();
+		initSettings();
+	}
+	/**
+	 * Constructor for 3D
+	 */
+	public World(List<DTNHost> hosts, int sizeX, int sizeY,int sizeZ,
+			double updateInterval, List<UpdateListener> updateListeners,
+			boolean simulateConnections, List<EventQueue> eventQueues) {
+		this.hosts = hosts;
+		this.sizeX = sizeX;
+		this.sizeY = sizeY;
+		this.sizeZ = sizeZ;
 		this.updateInterval = updateInterval;
 		this.updateListeners = updateListeners;
 		this.simulateConnections = simulateConnections;
@@ -244,6 +268,14 @@ public class World {
 	 */
 	public int getSizeY() {
 		return this.sizeY;
+	}
+	
+	/**
+	 * Returns the z-size (height) of the world
+	 * @return the z-size (height) of the world
+	 */
+	public int getSizeZ() {
+		return this.sizeZ;
 	}
 
 	/**
