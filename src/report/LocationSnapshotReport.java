@@ -20,7 +20,7 @@ public class LocationSnapshotReport extends SnapshotReport {
 	protected void writeSnapshot(DTNHost h) {
 		Coord location = h.getLocation();
 		write(h.toString() + " " +  format(location.getX()) + 
-				" " + format(location.getY()));
+				" " + format(location.getY())+" " + format(location.getZ()));
 	}
 
 }
